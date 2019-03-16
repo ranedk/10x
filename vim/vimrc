@@ -1,0 +1,248 @@
+"""""""""""""""""""""""""""""""""""""""""""""""""
+" Rane's lightweight yet powerful vimrc - MUST USE VIM 8
+"""""""""""""""""""""""""""""""""""""""""""""""""
+
+" This must be the first vim config to include.
+" Use Vim defaults (much better!)
+set nocompatible
+
+" ------------------ Vundle Config "  --------------------
+
+" Use Vundle to easily install and uninstall plugins
+" Just run :PluginInstall and the plugin list will be installed
+" :PluginClean to remove ones not in the list
+" with the following list
+
+set rtp+=~/.vim/bundle/Vundle.vim
+
+call vundle#begin()
+
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'morhetz/gruvbox'
+Plugin 'crusoexia/vim-monokai'
+
+" Use Ctrl-Y, to complete html emmet
+Plugin 'mattn/emmet-vim'
+
+Plugin 'vim-airline/vim-airline'
+Plugin 'airblade/vim-gitgutter'
+
+Plugin 'w0rp/ale'
+
+Plugin 'junegunn/fzf'
+Plugin 'junegunn/fzf.vim'
+
+" Comment any language using 'gc'
+Plugin 'tpope/vim-commentary'
+
+" Pressing % on a tag will take you to its matching tag
+Plugin 'tmhedberg/matchit'
+
+" Typescript syntax support
+Plugin 'leafgarland/typescript-vim'
+
+call vundle#end()
+"--------------------------------------------------------
+
+
+set path=$PWD/**
+filetype plugin indent on
+
+" Switch syntax highlighting on, when the terminal has colors
+if &t_Co > 2 || has("gui_running")
+  syntax on
+endif
+
+" Set default file encoding to unicode
+if v:lang =~ "utf8$" || v:lang =~ "UTF-8$"
+   set fileencodings=utf-8,latin1
+endif
+
+" General defaults
+" show existing tab with 4 spaces width
+set tabstop=4
+" when indenting with '>', use 4 spaces width
+set shiftwidth=4
+" On pressing tab, insert 4 spaces
+set expandtab
+set backspace=indent,eol,start
+                  " allow backspacing over everything in insert mode
+set autoindent    " always set autoindenting on
+set copyindent    " copy the previous indentation on autoindenting
+set shiftwidth=4  " number of spaces to use for autoindenting
+set expandtab     " use appropriate number of spaces when tabbing
+set shiftround    " use multiple of shiftwidth when indenting with '<' and '>'
+set showmatch     " set show matching parenthesis
+set ignorecase    " ignore case when searching
+set smartcase     " ignore case if search pattern is all lowercase, case-sensitive otherwise
+set smarttab      " insert tabs on the start of a line according to shiftwidth, not tabstop
+set hlsearch      " highlight search terms
+set incsearch     " show search matches as you type
+set history=1000  " remember more commands and search history
+set undolevels=1000 " use many muchos levels of undo
+set wildignore=*.swp,*.bak,*.pyc,*.class
+set title         " change the terminal's title
+set nobackup      " don't write a backup file
+set ruler         " show the cursor position all the time
+
+" toggle paste mode
+set pastetoggle=<F2>
+
+" toggle showing line numbers
+nmap <F3> :set number! number?<cr>
+
+  " highlight whitespace
+set list
+set listchars=tab:>.,trail:.,extends:#,nbsp:.
+
+
+" unhighlight search using \=
+nmap <silent> <Leader>= :nohlsearch <CR>
+
+" Tell vim to remember certain things when we exit
+set viminfo='20,\"50
+
+" Enable mouse support in console if you are into weird shit
+set mouse=r
+
+" Easy window navigation
+map <C-h> <C-w>h
+map <C-j> <C-w>j
+map <C-k> <C-w>k
+map <C-l> <C-w>l
+
+" save files if you forgot to sudo
+" use w!! and it will ask for sudo and save
+cmap w!! %!sudo tee > /dev/null %
+
+"folds: zf to fold, za to toggle
+set foldmethod=manual
+set foldcolumn=0
+set foldlevel=0
+set nofoldenable
+
+" store backup and swp files in these dirs to not clutter working dir
+set backupdir=~/.vim/_backup
+set directory=~/.vim/_temp
+
+"fix syntax highlighting for long files
+autocmd BufEnter * :syntax sync minlines=200
+
+"show current command in bottom line
+set showcmd
+
+" Cool tab completion stuff while entering commands
+set wildmenu
+set wildmode=list:longest,full
+
+" Search mappings: These will make it so that going to the next one in a
+" search will center on the line it's found in.
+map N Nzz
+map n nzz
+
+" Clisp
+autocmd Filetype lisp setlocal ts=2 sts=2 sw=2
+
+"Go
+au BufRead,BufNewFile *.go set filetype=go
+
+" Javascript
+autocmd Filetype javascript setlocal ts=2 sts=2 sw=2
+
+" Typescript
+autocmd BufNewFile,BufRead *.ts setlocal filetype=typescript
+
+
+if has("autocmd")
+  " When editing a file, always jump to the last cursor position
+  autocmd BufReadPost *
+  \ if line("'\"") > 0 && line ("'\"") <= line("$") |
+  \   exe "normal! g'\"" |
+  \ endif
+endif
+
+" Look and feel
+syntax enable
+set background=dark
+
+" Enable gruvbox
+let g:gruvbox_italic=1
+let g:gruvbox_italicize_strings=1
+
+colorscheme gruvbox
+
+" Enable solarized theme
+" let g:solarized_termcolors=256
+" colorscheme monokai " solarized is also available
+
+"Highlight trailing whitespace in red
+highlight ExtraWhitespace ctermbg=red guibg=red
+match ExtraWhitespace /\s\+$/
+autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+autocmd BufWinLeave * call clearmatches()
+
+" in normal mode, if tabs are open
+" use tab and shift-tab to navigate, t1 goes to first tab
+nmap t1 :tabfirst<CR>
+nmap <S-tab> :tabnext<CR>
+nmap <tab> :tabprevious<CR>
+
+iab _pdbt from IPython.core.debugger import Tracer<CR>Tracer()()
+iab _pdb from IPython.frontend.terminal.embed import InteractiveShellEmbed<CR>InteractiveShellEmbed()()
+iab _pdbc from celery.contrib import rdb<CR>rdb.set_trace()
+
+command Pd lcd %:p:h
+set complete-=i
+
+set cursorline
+set cursorcolumn
+set wrap
+
+" Use system clipboard (only works if compiled with +x)
+set clipboard=unnamed
+
+
+" ----------------------- FZF configuration ----------------------
+
+" press ; to search fuzzy files
+map ; :Files<CR>
+
+" This is the default extra key bindings
+let g:fzf_action = {
+  \ 'enter': 'tab split',
+  \ 'ctrl-h': 'split',
+  \ 'ctrl-v': 'vsplit' }
+
+" Default fzf layout
+" - down / up / left / right
+let g:fzf_layout = { 'down': '~40%' }
+
+" ---------------------------------------------------------------
+
+" ------- Ale linter configurations -----------------------------
+let b:ale_linters = ['flake8', 'eslint', 'tslint']
+" Path to eslint executable, configured in .zshrc or .bashrc
+let g:ale_javascript_eslint_executable = 'eslint'
+let g:ale_typescript_tslint_executable = 'tslint'
+let g:ale_typescript_tslint_config_path = '/home/rane/.tslintrc.json'
+
+" Airline show ale errors in statusline
+let g:airline#extensions#ale#enabled = 1
+
+" Use Ctrl - e to navigate between errors
+nmap <silent> <C-e> <Plug>(ale_next_wrap)
+
+" To fix files automatically on save
+let g:ale_fixers = { 'javascript': ['eslint'], 'python': ['autopep8'], 'typescript': ['tslint'] }
+" Auto fix lint using
+nmap ff :ALEFix<CR>
+
+" Enable completion where available
+let g:ale_completion_enabled = 1
+
+py3file $HOME/.vim/utils.py
+:nmap \] :py3 make_dict()<CR>
+:nmap \[ :py3 make_member()<CR>
