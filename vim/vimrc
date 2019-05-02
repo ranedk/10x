@@ -14,13 +14,16 @@ set nocompatible
 " with the following list
 
 set rtp+=~/.vim/bundle/Vundle.vim
+filetype off
 
 call vundle#begin()
 
+Plugin 'tpope/vim-fugitive'
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'morhetz/gruvbox'
 Plugin 'crusoexia/vim-monokai'
+Plugin 'elixir-editors/vim-elixir'
 
 " Use Ctrl-Y, to complete html emmet
 Plugin 'mattn/emmet-vim'

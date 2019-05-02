@@ -1,0 +1,42 @@
+# Why use terminator instead of terminal?
+
+Terminator is a python port of terminal. So in general is more configurable.
+One particular use case which works great during development is where one needs to run multiple servers, datastores or services and monitor them individually.
+
+# How
+0) Install terminator (sudo apt install terminator)
+1) Start terminator
+2) Split horizontally and vertically into required number of windows (right click for options)
+3) Right click > Preferences > Layouts > Add > Rename > Save (lets say you renamed it to "blog")
+4) Open terminator config file: $HOME/.config/terminator/config
+
+5) In the terminal section inside the [blog] section, which looks like below:
+```
+    [[[terminal2]]]
+      order = 0
+      parent = child1
+      profile = default
+      type = Terminal
+      uuid = 368f43be-e0ae-4c9c-90ac-7e8a0da56fa9
+```
+
+6) Add 2 lines as below
+```
+    [[[terminal2]]]
+      command = cd /home/rane/code/blog/base && source /home/rane/.virtualenvs/blog/bin/activate && python manage.py runserver; zsh
+      directory = /home/rane/code/blog/base
+      order = 0
+      parent = child1
+      profile = default
+      type = Terminal
+      uuid = 368f43be-e0ae-4c9c-90ac-7e8a0da56fa9
+```
+
+7) Add other commands to other terminal sections
+
+8) To launch the same layout, with running commands:
+```
+$ terminator -l blog
+```
+
+#### NOTE: This can also be accomplished using  the terminator preferece UI. You can distribute this to others in your team using the config file.
