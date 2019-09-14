@@ -1,5 +1,6 @@
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:$HOME/bin/android-studio/bin/:$PATH
+export PATH=$HOME/.cargo/bin:$HOME/bin/apache-maven-3.6.1/bin:$HOME/bin:$HOME/bin/android-studio/bin/:$PATH
+export ANDROID_HOME="$HOME/Android/Sdk/"
 
 # Path to your oh-my-zsh installation.
   export ZSH="$HOME/.oh-my-zsh"
@@ -79,7 +80,7 @@ alias iless="less -R"
 export PYTHONPATH="$HOME/bin/python:$PYTHONPATH"
 
 # Application secrets
-export GOOGLE_APPLICATION_CREDENTIALS="$HOME/code/secrets/google_api_creds_ranedk.json"
+export GOOGLE_APPLICATION_CREDENTIALS="$HOME/code/secrets/google_api.json"
 
 # Virtualenv - virtualenvwrapper config
 source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
@@ -90,7 +91,7 @@ export ERL_AFLAGS="-kernel shell_history enabled"
 
 # Golang configuration
 export GOROOT=/usr/local/go
-export GOPATH=$HOME/code/go_projects
+export GOPATH=$HOME/go_pkgs
 export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
 # Custom commands for zsh
