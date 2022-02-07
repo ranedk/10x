@@ -24,7 +24,7 @@ Install the following:
 
 `<ctrl> t`          Open terminal and toggle
 
-`<leader> x`        Paste current line or selection to terminal 
+`<leader> x`        Paste current line or selection to terminal
 
 #### Telescope
 
@@ -34,7 +34,7 @@ Install the following:
 
 `<leader>fn`        Fuzzy file search in current Directory
 
-`<leader>fo`        Open current directory to browse files 
+`<leader>fo`        Open current directory to browse files
 
 `<leader>fd`        Fuzzy filename search in any Directory
 

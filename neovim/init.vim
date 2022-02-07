@@ -6,11 +6,11 @@
 call plug#begin('~/.vim/plugged')
 
 Plug 'Mofiqul/vscode.nvim'
-Plug 'TimUntersberger/neogit'
 Plug 'folke/zen-mode.nvim'
 Plug 'hoob3rt/lualine.nvim'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'airblade/vim-gitgutter'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-vsnip'
 Plug 'hrsh7th/nvim-cmp'
@@ -21,21 +21,17 @@ Plug 'simrat39/rust-tools.nvim'
 Plug 'kassio/neoterm'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'morhetz/gruvbox'
-Plug 'lewis6991/gitsigns.nvim'
 Plug 'mfussenegger/nvim-dap'
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-lua/popup.nvim'
-Plug 'nvim-telescope/telescope-dap.nvim'
 Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plug 'projekt0n/github-nvim-theme'
 Plug 'puremourning/vimspector'
 Plug 'rcarriga/nvim-dap-ui'
 Plug 'ryanoasis/vim-devicons'
 Plug 'sbdchd/neoformat'
-Plug 'sindrets/diffview.nvim'
 Plug 'szw/vim-maximizer'
 Plug 'theHamsta/nvim-dap-virtual-text'
 Plug 'tpope/vim-commentary'
@@ -140,32 +136,109 @@ let g:gruvbox_italic=1
 let g:gruvbox_italicize_strings=0
 colorscheme gruvbox
 
+" mfussenegger/nvim-dap
+lua << EOF
+local dap = require('dap')
+vim.fn.sign_define('DapBreakpoint', {text='🟥', texthl='', linehl='', numhl=''})
+vim.fn.sign_define('DapStopped', {text='⭐️', texthl='', linehl='', numhl=''})
+EOF
+nnoremap <leader>dh :lua require'dap'.toggle_breakpoint()<CR>
+nnoremap <S-k> :lua require'dap'.step_out()<CR>
+nnoremap <S-l> :lua require'dap'.step_into()<CR>
+nnoremap <S-j> :lua require'dap'.step_over()<CR>
+nnoremap <leader>ds :lua require'dap'.stop()<CR>
+nnoremap <leader>dn :lua require'dap'.continue()<CR>
+nnoremap <leader>dk :lua require'dap'.up()<CR>
+nnoremap <leader>dj :lua require'dap'.down()<CR>
+nnoremap <leader>d_ :lua require'dap'.disconnect();require'dap'.stop();require'dap'.run_last()<CR>
+nnoremap <leader>dr :lua require'dap'.repl.open({}, 'vsplit')<CR><C-w>l
+nnoremap <leader>di :lua require'dap.ui.variables'.hover()<CR>
+vnoremap <leader>di :lua require'dap.ui.variables'.visual_hover()<CR>
+nnoremap <leader>d? :lua require'dap.ui.variables'.scopes()<CR>
+nnoremap <leader>de :lua require'dap'.set_exception_breakpoints({"all"})<CR>
+nnoremap <leader>di :lua require'dap.ui.widgets'.hover()<CR>
+nnoremap <leader>d? :lua local widgets=require'dap.ui.widgets';widgets.centered_float(widgets.scopes)<CR>
+
 " Configure LSP through rust-tools.nvim plugin.
 " rust-tools will configure and enable certain LSP features for us.
 " See https://github.com/simrat39/rust-tools.nvim#configuration
 lua <<EOF
 local nvim_lsp = require'lspconfig'
 
+local codelldb_path = '/Users/rane/codelldb/adapter/codelldb'
+local liblldb_path = '/Users/rane/codelldb/lldb/lib/liblldb.dylib'
+
 local opts = {
     tools = { -- rust-tools options
         autoSetHints = true,
         hover_with_actions = true,
-	runnables = {
-	    use_telescope = true
-	},
+        executor = require("rust-tools/executors").termopen,
+	      runnables = {
+	        use_telescope = true
+	      },
         inlay_hints = {
-            show_parameter_hints = false,
-            parameter_hints_prefix = "",
-            other_hints_prefix = "",
+            -- Only show inlay hints for the current line
+            only_current_line = false,
+
+            -- Event which triggers a refersh of the inlay hints.
+            -- You can make this "CursorMoved" or "CursorMoved,CursorMovedI" but
+            -- not that this may cause  higher CPU usage.
+            -- This option is only respected when only_current_line and
+            -- autoSetHints both are true.
+            only_current_line_autocmd = "CursorHold",
+
+            -- wheter to show parameter hints with the inlay hints or not
+            show_parameter_hints = true,
+
+            -- whether to show variable name before type hints with the inlay hints or not
+            show_variable_name = false,
+
+            -- prefix for parameter hints
+            parameter_hints_prefix = "<- ",
+
+            -- prefix for all the other hints (type, chaining)
+            other_hints_prefix = "=> ",
+
+            -- whether to align to the length of the longest line in the file
+            max_len_align = false,
+
+            -- padding from the left if max_len_align is true
+            max_len_align_padding = 1,
+
+            -- whether to align to the extreme right or not
+            right_align = false,
+
+            -- padding from the right if right_align is true
+            right_align_padding = 7,
+
+            -- The color of the hints
+            highlight = "Comment",
+        },
+        hover_actions = {
+            -- the border that is used for the hover window
+            -- see vim.api.nvim_open_win()
+            border = {
+                {"╭", "FloatBorder"}, {"─", "FloatBorder"},
+                {"╮", "FloatBorder"}, {"│", "FloatBorder"},
+                {"╯", "FloatBorder"}, {"─", "FloatBorder"},
+                {"╰", "FloatBorder"}, {"│", "FloatBorder"}
+            },
+
+            -- whether the hover action window gets automatically focused
+            auto_focus = true
+        },
+        debuggables = {
+            -- whether to use telescope for selection menu or not
+            use_telescope = true
         },
     },
-
     -- all the opts to send to nvim-lspconfig
     -- these override the defaults set by rust-tools.nvim
     -- see https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#rust_analyzer
     server = {
         -- on_attach is a callback called when the language server attachs to the buffer
         -- on_attach = on_attach,
+        standalone = true,
         settings = {
             -- to enable rust-analyzer settings visit:
             -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
@@ -177,6 +250,18 @@ local opts = {
             }
         }
     },
+    -- dap = {
+    --     adapter = require('rust-tools.dap').get_codelldb_adapter(
+    --         codelldb_path, liblldb_path
+    --     )
+    -- }
+    dap = {
+        adapter = {
+            type = 'executable',
+            command = 'codelldb',
+            name = "rt_lldb"
+        }
+    }
 }
 
 require('rust-tools').setup(opts)
@@ -247,12 +332,6 @@ autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
 " Goto previous/next diagnostic warning/error
 nnoremap <silent> g[ <cmd>lua vim.diagnostic.goto_prev()<CR>
 nnoremap <silent> g] <cmd>lua vim.diagnostic.goto_next()<CR>
-
-
-" lewis6991/gitsigns.nvim
-lua << EOF
- require('gitsigns').setup({})
-EOF
 
 " 'hoob3rt/lualine.nvim'
 lua << EOF
@@ -485,76 +564,6 @@ EOF
 " set foldmethod=expr
 " setlocal foldlevelstart=99
 " set foldexpr=nvim_treesitter#foldexpr()
-
-" mfussenegger/nvim-dap
-lua << EOF
-local dap = require('dap')
-dap.adapters.node2 = {
-  type = 'executable',
-  command = 'node',
-  args = {os.getenv('HOME') .. '/apps/vscode-node-debug2/out/src/nodeDebug.js'},
-}
-vim.fn.sign_define('DapBreakpoint', {text='🟥', texthl='', linehl='', numhl=''})
-vim.fn.sign_define('DapStopped', {text='⭐️', texthl='', linehl='', numhl=''})
-EOF
-nnoremap <leader>dh :lua require'dap'.toggle_breakpoint()<CR>
-nnoremap <S-c-k> :lua require'dap'.step_out()<CR>
-nnoremap <S-c-l> :lua require'dap'.step_into()<CR>
-nnoremap <S-c-j> :lua require'dap'.step_over()<CR>
-nnoremap <leader>ds :lua require'dap'.stop()<CR>
-nnoremap <leader>dn :lua require'dap'.continue()<CR>
-nnoremap <leader>dk :lua require'dap'.up()<CR>
-nnoremap <leader>dj :lua require'dap'.down()<CR>
-nnoremap <leader>d_ :lua require'dap'.disconnect();require'dap'.stop();require'dap'.run_last()<CR>
-nnoremap <leader>dr :lua require'dap'.repl.open({}, 'vsplit')<CR><C-w>l
-nnoremap <leader>di :lua require'dap.ui.variables'.hover()<CR>
-vnoremap <leader>di :lua require'dap.ui.variables'.visual_hover()<CR>
-nnoremap <leader>d? :lua require'dap.ui.variables'.scopes()<CR>
-nnoremap <leader>de :lua require'dap'.set_exception_breakpoints({"all"})<CR>
-nnoremap <leader>da :lua require'debugHelper'.attach()<CR>
-nnoremap <leader>dA :lua require'debugHelper'.attachToRemote()<CR>
-nnoremap <leader>di :lua require'dap.ui.widgets'.hover()<CR>
-nnoremap <leader>d? :lua local widgets=require'dap.ui.widgets';widgets.centered_float(widgets.scopes)<CR>
-
-" Plug 'nvim-telescope/telescope-dap.nvim'
-lua << EOF
-require('telescope').setup()
-require('telescope').load_extension('dap')
-EOF
-nnoremap <leader>df :Telescope dap frames<CR>
-nnoremap <leader>dc :Telescope dap commands<CR>
-nnoremap <leader>db :Telescope dap list_breakpoints<CR>
-
-" theHamsta/nvim-dap-virtual-text and mfussenegger/nvim-dap
-let g:dap_virtual_text = v:true
-
-" Plug 'rcarriga/nvim-dap-ui'
-" lua require("dapui").setup()
-" nnoremap <leader>dq :lua require("dapui").toggle()<CR>
-
-" jank/vim-test and mfussenegger/nvim-dap
-nnoremap <leader>dd :TestNearest -strategy=jest<CR>
-function! JestStrategy(cmd)
-  let testName = matchlist(a:cmd, '\v -t ''(.*)''')[1]
-  let fileName = matchlist(a:cmd, '\v'' -- (.*)$')[1]
-  call luaeval("require'debugHelper'.debugJest([[" . testName . "]], [[" . fileName . "]])")
-endfunction
-let g:test#custom_strategies = {'jest': function('JestStrategy')}
-
-" TimUntersberger/neogit and sindrets/diffview.nvim
-lua << EOF
-require("neogit").setup {
-  disable_commit_confirmation = true,
-  integrations = {
-    diffview = true
-    }
-  }
-EOF
-nnoremap <leader>gg :Neogit<cr>
-nnoremap <leader>gd :DiffviewOpen<cr>
-nnoremap <leader>gD :DiffviewOpen main<cr>
-nnoremap <leader>gl :Neogit log<cr>
-nnoremap <leader>gp :Neogit push<cr>
 
 " folke/zen-mode.nvim
 lua << EOF
